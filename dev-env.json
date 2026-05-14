@@ -1,0 +1,40 @@
+{
+	"id": "06ba7d41-916b-4148-a556-b0453b5bfb91",
+	"name": "DummyJSON DEV",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "https://dummyjson.com",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "productId",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "randomBrand",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "randomPrice",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"color": null,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2026-05-14T07:51:31.746Z",
+	"_postman_exported_using": "Postman/12.10.5-260514-0232"
+}

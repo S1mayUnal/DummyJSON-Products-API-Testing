@@ -1,0 +1,604 @@
+{
+  "info": {
+    "_postman_id": "edc8579f-3aef-4693-ba78-aa332322821e",
+    "name": "BulutTest_Odev3",
+    "description": "### Welcome to Postman! This is your first collection.\n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests  \n• Test your API in real-world scenarios  \n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54808791",
+    "_collection_link": "https://go.postman.co/collection/54808791-edc8579f-3aef-4693-ba78-aa332322821e?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Sayfalanmış Ürün Listesi",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Durum Kodu Kontrolü (Zorunlu)",
+              "pm.test(\"Status code is 200\", () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// 2. Yanıt Süresi Kontrolü (Zorunlu)",
+              "pm.test(\"Response time is less than 2000ms\", () => {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000); ",
+              "});",
+              "",
+              "// 3. İçerik ve Alan Kontrolü (Zorunlu)",
+              "pm.test(\"Response contains products, total, skip, and limit\", () => {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.all.keys('products', 'total', 'skip', 'limit'); ",
+              "});",
+              "",
+              "// 4. JSON Schema Validation (Ödevde Bu Endpoint İçin Zorunlu)",
+              "const schema = {",
+              "    type: \"object\",",
+              "    required: [\"products\", \"total\", \"skip\", \"limit\"],",
+              "    properties: {",
+              "        products: {",
+              "            type: \"array\",",
+              "            items: {",
+              "                type: \"object\",",
+              "                required: [\"id\", \"title\", \"price\", \"category\", \"thumbnail\"]",
+              "            }",
+              "        },",
+              "        total: { type: \"number\" },",
+              "        skip: { type: \"number\" },",
+              "        limit: { type: \"number\" }",
+              "    }",
+              "};",
+              "",
+              "pm.test(\"JSON Schema is valid\", () => {",
+              "    pm.response.to.have.jsonSchema(schema); ",
+              "});",
+              "",
+              "// 5. Ek Assertion (Bonus Puan İçin)",
+              "pm.test(\"Products list is an array and has correct length\", () => {",
+              "    const data = pm.response.json();",
+              "    pm.expect(data.products).to.be.an(\"array\"); ",
+              "    pm.expect(data.products.length).to.eql(5); // limit=5 olduğu için ",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/products?limit=5&skip=5",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            },
+            {
+              "key": "skip",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Yeni Ürün Oluştur",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü",
+              "pm.test(\"Status code is 201\", function () { ",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "// 2. Response Time Kontrolü ",
+              "pm.test(\"Response time is less than 2000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "// 3. Body ve İçerik Kontrolü ",
+              "pm.test(\"Content-Type is application/json\", function () {",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Rastgele marka ve fiyat üretme scripti\r",
+              "const brands = [\"Apple\", \"Samsung\", \"Sony\", \"LG\", \"Huawei\", \"Xiaomi\", \"Oppo\"];\r",
+              "const randomBrand = brands;\r",
+              "const randomPrice = Math.floor(Math.random() * 5000) + 100; \r",
+              "\r",
+              "// Üretilen değerleri çevre değişkenlerine (environment) kaydet \r",
+              "pm.environment.set(\"randomBrand\", randomBrand);\r",
+              "pm.environment.set(\"randomPrice\", randomPrice);\r",
+              "\r",
+              "// Console üzerinden kontrol etmek için (Opsiyonel)\r",
+              "console.log(\"Üretilen Marka: \" + randomBrand);\r",
+              "console.log(\"Üretilen Fiyat: \" + randomPrice);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"title\": \"Yeni Nesil Akıllı Telefon\",\n    \"description\": \"Otomatik test ile oluşturulmuştur.\",\n    \"price\": {{randomPrice}},\n    \"brand\": \"{{randomBrand}}\",\n    \"category\": \"smartphones\"\n}\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/products/add",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "add"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Tek Ürün Detayı",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü \r",
+              "pm.test(\"Status code is 200\", function () { \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Olmayan ürün (negatif test)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü\r",
+              "pm.test(\"Status code is 404\", function () { \r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products/99999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "99999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ürün arama",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü\r",
+              "pm.test(\"Status code is 200\", function () { \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products/search?q=phone",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "phone"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ürün Güncelle",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü\r",
+              "pm.test(\"Status code is 200\", function () { \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Güncellenmiş Ürün\",\r\n    \"price\": 2999\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/products/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Ürün Sil",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Ürün başarıyla silindi (isDeleted: true)\", function () {\r",
+              "    const res = pm.response.json();\r",
+              "    pm.expect(res.isDeleted).to.eql(true); // \r",
+              "});\r",
+              "\r",
+              "// 1. Status Code Kontrolü\r",
+              "pm.test(\"Status code is 200\", function () { \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Giriş → accessToken al",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();\r",
+              "\r",
+              "// Başarılı bir yanıt geldiyse ve accessToken varsa kaydet\r",
+              "pm.test(\"Giriş başarılı ve token alındı\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "    pm.expect(res).to.have.property('accessToken');\r",
+              "    \r",
+              "    // Değişkeni çevreye kaydet\r",
+              "    pm.environment.set(\"authToken\", res.accessToken);\r",
+              "});\r",
+              "// 1. Status Code Kontrolü\r",
+              "pm.test(\"Status code is 200\", function () { \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});\r",
+              "\r",
+              "// Ek kontrol: Token gerçekten set edildi mi?\r",
+              "console.log(\"Kaydedilen Token: \" + pm.environment.get(\"authToken\"));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"emilys\",\r\n    \"password\": \"emilyspass\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Yanlış şifre → hata mesajı",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü (Hatalı giriş 400 döner)\r",
+              "pm.test(\"Status code is 400\", function () {\r",
+              "    pm.response.to.have.status(400); // 200 yerine 400 bekliyoruz \r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü\r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body İçerik Kontrolü (Hata mesajı var mı?)\r",
+              "pm.test(\"Error message is returned\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.message).to.be.a(\"string\"); // Mesaj bir metin olmalı \r",
+              "    pm.expect(jsonData.message).to.include(\"Invalid credentials\"); // Hata mesajı içeriği \r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"simay\",\r\n    \"password\": \"simaysifre\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Token ile profil getir",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. Status Code Kontrolü \r",
+              "pm.test(\"Status code is 200\", function () { // Not: Hatalı login için 400, yeni ürün için 201 yazmalısın \r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// 2. Response Time Kontrolü \r",
+              "pm.test(\"Response time is less than 2000ms\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});\r",
+              "\r",
+              "// 3. Body ve İçerik Kontrolü \r",
+              "pm.test(\"Content-Type is application/json\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
